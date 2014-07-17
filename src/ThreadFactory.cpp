@@ -6,8 +6,11 @@
 #include <errno.h>
 #include "ThreadedRequest.h"
 #include <signal.h>
+#include "Client2MasterProt.h"
 
 extern pthread_mutex_t muLog;
+
+extern Client2MasterProt serverParam_q;
 
 ThreadFactory::ThreadFactory()
 {
@@ -30,8 +33,11 @@ void ThreadFactory::AddThread( ThreadedRequest* pThread )
 void ThreadFactory::CheckThreads( void )
 {
 	char logout[128];
-	snprintf(logout, 128, "ThreadFactory::CheckThreads() checking '%d' threads", m_vThreads.size());
-	Log(logout);
+	if(serverParam_q.getVerbose_m())
+	{
+		snprintf(logout, 128, "ThreadFactory::CheckThreads() checking '%d' threads", m_vThreads.size());
+		Log(logout);
+	}
 
     pthread_mutex_lock(&m_threadMutex);
 	std::vector<ThreadedRequest*>::iterator it = m_vThreads.begin();

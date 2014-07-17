@@ -8,6 +8,7 @@
 #include "GameStats.h"
 #include "ThreadedRequest.h"
 #include "DBProcessor.h"
+#include "Client2MasterProt.h"
 
 #define TIMEOUT_GAMESTATS 120		// How long do we want to wait for the worker to complete ?
 #define TIMEOUT_DBPROCESSOR 30		// How long do we want to wait for the worker to complete ?
@@ -17,6 +18,9 @@ using namespace std;
 static MasterserverManager* gMasterManager = MasterserverManager::getInstance();
 
 extern pthread_mutex_t muLog;
+
+extern Client2MasterProt serverParam_q;
+
 SourceStats* SourceStats::gSourceStats = NULL;
 
 SourceStats::SourceStats( void )
@@ -43,16 +47,17 @@ void SourceStats::Init( void )
 {
 	Log("SourceStats::main() Adding Masterservers...");
 
-    gMasterManager->AddServer( "72.165.61.153:27015" );
+	gMasterManager->AddServer( serverParam_q.getIpPort_server() );
+    /*gMasterManager->AddServer( "72.165.61.153:27015" );
     gMasterManager->AddServer( "63.234.149.83:27011" );
-    gMasterManager->AddServer( "63.234.149.90:27011" );
+    gMasterManager->AddServer( "63.234.149.90:27011" );*/
 
 	const char* sGameName = "dystopia";
 	char log[128];
-	snprintf(log, 128, "SourceStats::main() Requesting GameServer for game '%s'...", sGameName);
+	/*snprintf(log, 128, "SourceStats::main() Requesting GameServer for game '%s'...", sGameName);
     Log(log);
     snprintf(log, 128, "SourceStats::main() Creating worker for game '%s'...", sGameName);
-	Log(log);
+	Log(log);*/
 
 	pthread_t tThread;
 	MMThreadArgs* pThreadArgs = new MMThreadArgs( this, sGameName );

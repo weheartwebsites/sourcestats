@@ -8,6 +8,7 @@
 #include "GameserverInfo.h"
 #include "MasterserverManager.h"
 #include <iostream>
+#include "Client2MasterProt.h"
 
 #define TIMEOUT_MASTERWORKER 100		// How long do we want to wait for the worker to complete ?
 #define TIMEOUT_GAMEINFOWORKER 10	// How long do we want to wait for the game info workers to complete ?
@@ -20,6 +21,7 @@ extern pthread_mutex_t muLog;
 
 static MasterserverManager* gMasterManager = MasterserverManager::getInstance();
 
+extern Client2MasterProt serverParam_q;
 
 GameStats::GameStats( ThreadFactory* pFactory, const char* szGameName ) : ThreadedRequest( pFactory )
 {
@@ -209,6 +211,7 @@ void GameStats::CheckTermination( void )
 
 void GameStats::CheckFinishedGameInfoQueries( void )
 {
+	if(serverParam_q.getVerbose_m())
 	Log("GameStats::CheckFinishedGameInfoQueries() Looking for finished GameInfoQueries...");
     pthread_mutex_lock(&m_threadMutex);
 	std::vector<ThreadedRequest*>::iterator it = m_vThreads.begin();
@@ -225,6 +228,7 @@ void GameStats::CheckFinishedGameInfoQueries( void )
 
         if ( !pThread->IsGameInfoQuery() )
         {
+        	if(serverParam_q.getVerbose_m())
 			Log("GameStats::CheckFinishedGameInfoQueries() skipping non-gameinfoquery");
             it++;
             continue;
@@ -253,6 +257,7 @@ void GameStats::CheckFinishedGameInfoQueries( void )
 
 void GameStats::CheckFinishedMasterqueries( void )
 {
+	if(serverParam_q.getVerbose_m())
 	Log("GameStats::CheckFinishedMasterqueries() Looking for finished Masterqueries...");
     if (m_pMasterquery && m_pMasterquery->GetState() == MQSTATE_DONE && m_iQueryState == GSSTATE_WAITINGMASTERQ)
     {

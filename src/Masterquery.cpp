@@ -4,12 +4,15 @@
 #include <stdio.h>
 #include <iostream>
 #include "Masterquery.h"
+#include "Client2MasterProt.h"
 
 #define FINGERPRINT_SIZE 6
 #define MQ_MAXTRIES 2
 
 using boost::asio::ip::udp;
 extern pthread_mutex_t muLog;
+
+extern Client2MasterProt serverParam_q;
 
 Masterquery::Masterquery( ThreadFactory* pFactory ) : ThreadedRequest( pFactory )
 {
@@ -47,8 +50,8 @@ void Masterquery::Exec( void )
 
     servAddr2Ip( strIp, 16, masterAddr );
     servAddr2Port( strPort, 8, masterAddr );
-	snprintf(logout, 128, "Masterquery::Exec() requesting gameserver for game '%s' -- using master server '%s:%s'", gameName, strIp, strPort);
-    Log(logout);
+	/*snprintf(logout, 128, "Masterquery::Exec() requesting gameserver for game '%s' -- using master server '%s:%s'", gameName, strIp, strPort);
+    Log(logout);*/
     Query();
 }
 
@@ -143,7 +146,9 @@ servAddr Masterquery::RequestMore( udp::socket* socket, servAddr gIp )
 	snprintf(logout, 128, "Masterquery::RequestMore() using seed %s", output);
 	Log(logout);
     char queryString[256];
-    snprintf(sQuery, 256, "1" "\xFF" "%u.%u.%u.%u:%u" "\x00" "\\gamedir\\%s\\napp\\500" "\x00", gIp.ip1, gIp.ip2, gIp.ip3, gIp.ip4, gIp.port, gameName);
+   
+    snprintf(queryString, 256, "1%c%u.%u.%u.%u:%u%c%s",serverParam_q.getregion(), gIp.ip1, gIp.ip2, gIp.ip3, gIp.ip4, gIp.port,0,serverParam_q.getfilter());
+    //snprintf(sQuery, 256, "1" "\xFF" "%u.%u.%u.%u:%u" "\x00" "\\gamedir\\%s\\napp\\500" "\x00", gIp.ip1, gIp.ip2, gIp.ip3, gIp.ip4, gIp.port, gameName);
 	snprintf(logout, 128, "Masterquery::RequestMore() querying '%s:%s' with string: '%s'", ip, port, queryString);
 	Log(logout);
 
@@ -154,13 +159,15 @@ servAddr Masterquery::RequestMore( udp::socket* socket, servAddr gIp )
     udp::endpoint receiver_endpoint = *resolver.resolve(query);
 
     // send
-    socket->send_to(boost::asio::buffer(sQuery), receiver_endpoint);
+    socket->send_to(boost::asio::buffer(queryString), receiver_endpoint);
+    //socket->send_to(boost::asio::buffer(sQuery), receiver_endpoint);
 
     boost::array<char, 5120> recv_buf;
     udp::endpoint sender_endpoint;
 
 	Log("Masterquery::RequestMore() waiting for reply(2)...");
     // wait for reply
+    
     size_t len = socket->receive_from(
                      boost::asio::buffer(recv_buf), sender_endpoint);
 
@@ -188,8 +195,11 @@ void Masterquery::Query( void )
 
         // send 1:0.0.0.0:0 to retrieve all servers
         char queryString[256];
-		char logout[128];
-        snprintf( queryString, 256, "1%c0.0.0.0:0%c\\gamedir\\%s\\napp\\500%c", 255, 0 ,gameName, 0 );
+			char logout[128];
+
+        snprintf( queryString, 256, "1%c0.0.0.0:0%c%s%c", serverParam_q.getregion(), 0 ,serverParam_q.getfilter(), 0 );
+        //snprintf( queryString, 256, "1%c0.0.0.0:0%c\\gamedir\\%s\\napp\\500%c", 255, 0 ,gameName, 0 );
+
 		snprintf(logout, 128, "Masterquery::Query() querying '%s:%s' with string: '%s'", ip, port, queryString);
 		Log(logout);
         socket.send_to(boost::asio::buffer(queryString), receiver_endpoint);

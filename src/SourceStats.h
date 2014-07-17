@@ -25,6 +25,7 @@ public:
 	static void*			ThreadGameStats( void *arg );
 	static void*			ThreadDatabase( void *arg );
 
+	//void						Init(int argc, char *argv[]);
     void					Init( void );
     void					Loop( void );
     void                    HandlefinishedStats( GameStats* pStats );

@@ -15,6 +15,5 @@ int main(int argc, char *argv[])
 	pthread_mutex_init(&muLog, NULL);
 	
 	gSourceStats->Init();
-	/*gSourceStats->Loop();*/
-	while(1){}
+	gSourceStats->Loop();
 }

@@ -46,8 +46,10 @@ void SourceStats::Destroy( void )
 void SourceStats::Init( void )
 {
 	Log("SourceStats::main() Adding Masterservers...");
-
-	gMasterManager->AddServer( serverParam_q.getIpPort_server() );
+	
+	serverParam_q.AddServers(*gMasterManager);
+	
+	//gMasterManager->AddServer( serverParam_q.getIpPort_server() );
     /*gMasterManager->AddServer( "72.165.61.153:27015" );
     gMasterManager->AddServer( "63.234.149.83:27011" );
     gMasterManager->AddServer( "63.234.149.90:27011" );*/
@@ -100,6 +102,7 @@ void SourceStats::AddGameStats( GameStats* pStats )
 
 void SourceStats::CheckFinishedGamestats( void )
 {
+	if(serverParam_q.getVerbose_m())
     Log("CheckFinishedGamestats() Looking for finished GameStats...");
 	vector<ThreadedRequest*>::iterator it = m_vThreads.begin();
 
@@ -120,6 +123,7 @@ void SourceStats::CheckFinishedGamestats( void )
 
 void SourceStats::CheckFinishedDBProcessors( void )
 {
+	if(serverParam_q.getVerbose_m())
 	Log("CheckFinishedDBProcessors() Looking for finished DBProcessors...");
 	vector<ThreadedRequest*>::iterator it = m_vThreads.begin();
 
@@ -157,7 +161,8 @@ void SourceStats::Loop( void )
 		CheckFinishedGamestats();
 		CheckFinishedDBProcessors();
         CheckThreads();				// for stats only, check for finished threads
-		Log("SourceStats::Loop()");
+		if(serverParam_q.getVerbose_m())
+			Log("SourceStats::Loop()");
         sleep(5);
 
 		if ( GetActiveThreadNo() == 0 )

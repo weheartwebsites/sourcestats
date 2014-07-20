@@ -44,12 +44,12 @@ void Masterquery::SetGame( const char* gName )
 
 void Masterquery::Exec( void )
 {
-    char strIp[16];
+    /*char strIp[16];
     char strPort[8];
 	char logout[128];
 
     servAddr2Ip( strIp, 16, masterAddr );
-    servAddr2Port( strPort, 8, masterAddr );
+    servAddr2Port( strPort, 8, masterAddr );*/
 	/*snprintf(logout, 128, "Masterquery::Exec() requesting gameserver for game '%s' -- using master server '%s:%s'", gameName, strIp, strPort);
     Log(logout);*/
     Query();
@@ -137,7 +137,7 @@ servAddr Masterquery::RequestMore( udp::socket* socket, servAddr gIp )
     char sQuery[32];
     char ip[16];
     char port[8];
-	char logout[128];
+	 char logout[128];
 
     servAddr2Ip( ip, 16, masterAddr );
     servAddr2Port( port, 8, masterAddr );
@@ -159,8 +159,68 @@ servAddr Masterquery::RequestMore( udp::socket* socket, servAddr gIp )
     udp::endpoint receiver_endpoint = *resolver.resolve(query);
 
     // send
-    socket->send_to(boost::asio::buffer(queryString), receiver_endpoint);
+    //socket->send_to(boost::asio::buffer(queryString), receiver_endpoint);
     //socket->send_to(boost::asio::buffer(sQuery), receiver_endpoint);
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		fd_set read_sockets;
+		fd_set except_sockets;
+		int rc;
+		int natSocket = socket->native();
+		struct timeval tv;
+		bool packet_received = false;
+		int i = 0;
+		
+		int timeout_Seconds = serverParam_q.gettimeoutSeconds();
+		int num_retry = serverParam_q.getn_retry();
+	
+		do
+		{
+			
+			snprintf(logout, 128, "Masterquery::Query() Re-sending(%d) query to the server.",i);
+			if(i>0)Log(logout);
+		
+			socket->send_to(boost::asio::buffer(queryString), receiver_endpoint);
+			for(int j=0; j<=timeout_Seconds; j++)
+			{
+				if(j==0)Log("Masterquery::Query() Waiting response...");
+				FD_ZERO(&read_sockets);
+				FD_SET(natSocket,&read_sockets);
+				
+				tv.tv_sec=0;
+			   tv.tv_usec=1;
+			   
+				rc=select(FD_SETSIZE,&read_sockets, NULL, NULL,&tv);
+				
+				if(rc<0)
+				{
+					Log("Masterquery::Query() There is an ERROR in select.");
+					exit(-1);
+				}
+				
+				if (FD_ISSET(natSocket,&read_sockets))
+				{
+					Log("Masterquery::Query() Packet received.");
+					packet_received = true;
+					break;
+				}
+				sleep(1);
+			}
+			i++;
+		}
+		while((!packet_received) && i <= num_retry);
+		
+		if(!packet_received)
+		{
+			Log("Masterquery::Query() Error: Packet not received.");
+			
+			servAddr gIp_temp;
+
+			gIp_temp.ip1 = 0; gIp_temp.ip2 = 0; gIp_temp.ip3 = 0; gIp_temp.ip4 = 0; gIp_temp.port = 0;
+        
+			return gIp_temp;
+		}
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     boost::array<char, 5120> recv_buf;
     udp::endpoint sender_endpoint;
@@ -173,7 +233,6 @@ servAddr Masterquery::RequestMore( udp::socket* socket, servAddr gIp )
 
     return ParseMasterReply( recv_buf.data(), len );
 }
-
 
 void Masterquery::Query( void )
 {
@@ -192,7 +251,7 @@ void Masterquery::Query( void )
 
         udp::socket socket(io_service);
         socket.open(udp::v4());
-
+	
         // send 1:0.0.0.0:0 to retrieve all servers
         char queryString[256];
 			char logout[128];
@@ -202,7 +261,63 @@ void Masterquery::Query( void )
 
 		snprintf(logout, 128, "Masterquery::Query() querying '%s:%s' with string: '%s'", ip, port, queryString);
 		Log(logout);
-        socket.send_to(boost::asio::buffer(queryString), receiver_endpoint);
+		
+        //socket.send_to(boost::asio::buffer(queryString), receiver_endpoint);
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		fd_set read_sockets;
+		fd_set except_sockets;
+		int rc;
+		int natSocket = socket.native();
+		struct timeval tv;
+		bool packet_received = false;
+		int i = 0;
+		
+		int timeout_Seconds = serverParam_q.gettimeoutSeconds();
+		int num_retry = serverParam_q.getn_retry();
+	
+		do
+		{
+			snprintf(logout, 128, "Masterquery::Query() Re-sending(%d) query to the server.",i);
+			if(i>0)Log(logout);
+				
+			socket.send_to(boost::asio::buffer(queryString), receiver_endpoint);
+			for(int j=0; j<=timeout_Seconds; j++)
+			{
+				if(j==0)Log("Masterquery::Query() Waiting response...");
+				FD_ZERO(&read_sockets);
+				FD_SET(natSocket,&read_sockets);
+				
+				tv.tv_sec=0;
+			   tv.tv_usec=1;
+			   
+				rc=select(FD_SETSIZE,&read_sockets, NULL, NULL,&tv);
+				
+				if(rc<0)
+				{
+					Log("Masterquery::Query() There is an ERROR in select.");
+					exit(-1);
+				}
+				
+				if (FD_ISSET(natSocket,&read_sockets))
+				{
+					Log("Masterquery::Query() Packet received.");
+					packet_received = true;
+					break;
+				}
+				sleep(1);
+			}
+			i++;
+		}
+		while((!packet_received) && i <= num_retry);
+		
+		if(!packet_received)
+		{
+			Log("Masterquery::Query() Error: Packet not received.");
+			exit(0);
+		}
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
         boost::array<char, 5120> recv_buf;
         udp::endpoint sender_endpoint;
@@ -211,6 +326,7 @@ void Masterquery::Query( void )
         // wait for reply
         size_t len = socket.receive_from(
                          boost::asio::buffer(recv_buf), sender_endpoint);
+
 
         servAddr gIp;
         gIp = ParseMasterReply(recv_buf.data(), len);
@@ -230,6 +346,7 @@ void Masterquery::Query( void )
             gIp = RequestMore(&socket, gIp);
         }
 		Log("Masterquery::Query() EOF!");
+		exit(0);// Temporal, just because I want to see the IPs returned by the server
 		Finished();
     }
     catch (std::exception& e)

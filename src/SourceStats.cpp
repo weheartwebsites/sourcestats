@@ -54,8 +54,9 @@ void SourceStats::Init( void )
     gMasterManager->AddServer( "63.234.149.83:27011" );
     gMasterManager->AddServer( "63.234.149.90:27011" );*/
 
-	const char* sGameName = "dystopia";
-	char log[128];
+	//const char* sGameName = "dystopia";
+	const char* sGameName = serverParam_q.getfilter();
+	//char log[128];
 	/*snprintf(log, 128, "SourceStats::main() Requesting GameServer for game '%s'...", sGameName);
     Log(log);
     snprintf(log, 128, "SourceStats::main() Creating worker for game '%s'...", sGameName);

@@ -16,6 +16,9 @@ private:
 	unsigned char region;
 	string Port;
 	string filter;
+	
+	int timeoutSeconds;
+	int n_retry;
 public:
 	Client2MasterProt();
 	void set(int argc, char *argv[]);
@@ -25,6 +28,9 @@ public:
 	const char * getPort(){return Port.c_str();}
 	const char * getfilter(){return filter.c_str();}
 	bool getVerbose_m(){return verbose_m;}
+	
+	int gettimeoutSeconds(){return timeoutSeconds;}
+	int getn_retry(){return n_retry;}
 	
 	void AddServers(MasterserverManager &);
 	int Region_str2int(string);

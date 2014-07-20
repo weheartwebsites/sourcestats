@@ -12,25 +12,27 @@ Client2MasterProt::Client2MasterProt()//:verbose_m(false),IpPort_server("0:0"),r
 	region = '0';
 	Port = "0";
 	filter = "0";
+	timeoutSeconds = 0;
+	n_retry = 0;
 }
 
 void Client2MasterProt::set(int argc, char *argv[])
 {
 	char c;
-	char logout[256];
+	char logout[512];
 	
-	if(argc < 9)
+	if(argc < 13)
 	{
-		snprintf(logout, 256, 
+		snprintf(logout, 512, 
 		"Error: No input parameters.\n"
-		"Use:     %s -i <IP server address> -p <Server Port> -r <Region code (decimal)> -f <Filter>\n"
-		"Example: %s -h hl2master.steampowered.com -p 27011 -r us-west -f \"\\type\\d\\secure\\1\"",argv[0],argv[0]);
+		"Use:     %s -i <IP server address> -p <Server Port> -r <Region code (decimal)> -f <Filter> -t <Timeout(seconds)> -n <Number of retries> [-v]\n"
+		"Example: %s -h hl2master.steampowered.com -p 27011 -r us-west -f \"\\type\\d\\secure\\1\" -t 3 -n 3",argv[0],argv[0]);
 
 		Log(logout);
 		exit(-1);
 	}
 	
-	while((c = getopt (argc,argv,"h:p:r:f:v")) != EOF)
+	while((c = getopt (argc,argv,"h:p:r:f:t:n:v")) != EOF)
 	switch ((char) c)
 	{
 		case 'h':
@@ -94,6 +96,34 @@ void Client2MasterProt::set(int argc, char *argv[])
 			verbose_m = true;
 			snprintf(logout, 128, "Client2MasterProt::set() Verbose mode");
 			Log(logout);
+		break;
+		case 't':
+			if(optarg == NULL)
+			{
+				snprintf(logout, 128, "Client2MasterProt::set() Timeout(seconds) is missing");
+				Log(logout);
+				exit(0);
+			}
+			else
+			{
+				snprintf(logout, 128, "Client2MasterProt::set() Timeout(seconds): %s", optarg);
+				Log(logout);
+				timeoutSeconds = atoi(optarg);
+			}
+		break;
+		case 'n':
+			if(optarg == NULL)
+			{
+				snprintf(logout, 128, "Client2MasterProt::set() Number of retries is missing");
+				Log(logout);
+				exit(0);
+			}
+			else
+			{
+				snprintf(logout, 128, "Client2MasterProt::set() Number of retries: %s", optarg);
+				Log(logout);
+				n_retry = atoi(optarg);
+			}
 		break;
 	}
 }

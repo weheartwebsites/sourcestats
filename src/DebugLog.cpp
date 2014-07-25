@@ -14,6 +14,13 @@ void DebugLog::Log( const char* logMsg )
     pthread_mutex_unlock (&muLog);
 }
 
+void DebugLog::Log( const char* logMsg , const char *id_tag)
+{
+    pthread_mutex_lock (&muLog);
+    cout << "[" << time(NULL) << "][" << id_tag << "] " << logMsg << endl;
+    pthread_mutex_unlock (&muLog);
+}
+
 void DebugLog::LogNoDeadLock( const char* logMsg )
 {
     Log( logMsg );

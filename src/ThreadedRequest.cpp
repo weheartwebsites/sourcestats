@@ -32,7 +32,8 @@ void ThreadedRequest::Init( void )
 
 void ThreadedRequest::PostEntryPoint( void )
 {
-	Loop();
+	pthread_exit(NULL);
+//	Loop();
 }
 
 void ThreadedRequest::SetKill( bool bKillme )

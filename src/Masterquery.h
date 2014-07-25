@@ -27,6 +27,8 @@ public:
     void                Exec( void );
 	const char*			GetClassName( void ) { return "Masterquery"; }
 
+	static void*	ThreadServerQueries( void *arg );
+
     virtual void        Log( const char* logMsg );
 	virtual bool		IsMasterquery( void ) { return true; }
 

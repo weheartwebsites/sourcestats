@@ -2,6 +2,7 @@
 #define CONST_H
 
 #include <stdio.h>
+#include <string>
 
 enum giQuery_state
 {
@@ -84,6 +85,13 @@ typedef struct {
     unsigned char ip4;
     unsigned short port;
 } servAddr;
+
+typedef struct {
+    char IP[16];
+	 char PORT[6];
+    std::string ID_tag;
+} servAddr_thread;
+
 
 // converts the given servAddr struct to a string
 void servAddr2String( char* sAddr, size_t size, servAddr stServaddr );

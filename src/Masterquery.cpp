@@ -5,6 +5,7 @@
 #include <iostream>
 #include "Masterquery.h"
 #include "Client2MasterProt.h"
+#include "ServerQueries.h"
 
 #define FINGERPRINT_SIZE 6
 #define MQ_MAXTRIES 2
@@ -44,15 +45,58 @@ void Masterquery::SetGame( const char* gName )
 
 void Masterquery::Exec( void )
 {
-    /*char strIp[16];
-    char strPort[8];
+	Query();
+	
+	if(m_vResultlist.size() > 0)
+	{
+		int i = 1;
+		for (std::vector<GameserverEntry*>::iterator it = m_vResultlist.end()-1 ; it != m_vResultlist.begin() && it != m_vResultlist.end()-3; --it)
+		{
+			char logout[128];
+			snprintf(logout, 128, "Masterquery::Exec Creating threads#%d for querying the server", i);
+			Log(logout);
+
+			servAddr server_addr;
+			server_addr =  (*it)->GetAddr();
+			
+			servAddr_thread *servAddr_t = new servAddr_thread;
+			char tag_tem[25];
+			pthread_t tThread;
+			
+			servAddr2Ip( servAddr_t->IP, 128,server_addr);
+			servAddr2Port( servAddr_t->PORT, 128, server_addr );
+			
+			sprintf(tag_tem,"Thread#%d",i);
+			
+			servAddr_t->ID_tag = tag_tem;
+    
+			int ret = pthread_create( &tThread, NULL, Masterquery::ThreadServerQueries, servAddr_t );
+			
+			i++;
+		}
+	}
+	else
+	{
+		Log("Masterquery::Exec No addresses stored in Masterquery::m_vResultlist");
+		exit(0);
+	}
+}
+
+void* Masterquery::ThreadServerQueries( void *arg )
+{
+	servAddr_thread* servAddrpArgs = (servAddr_thread*)arg;
+	ServerQueries ServerQuery1;
 	char logout[128];
 
-    servAddr2Ip( strIp, 16, masterAddr );
-    servAddr2Port( strPort, 8, masterAddr );*/
-	/*snprintf(logout, 128, "Masterquery::Exec() requesting gameserver for game '%s' -- using master server '%s:%s'", gameName, strIp, strPort);
-    Log(logout);*/
-    Query();
+	ServerQuery1.set_id_query((servAddrpArgs->ID_tag).c_str());
+
+	ServerQuery1.query_A2S_INFO(servAddrpArgs->IP,servAddrpArgs->PORT);
+	
+	ServerQuery1.query_A2S_PLAYER(servAddrpArgs->IP,servAddrpArgs->PORT);
+	
+	ServerQuery1.query_A2S_RULES(servAddrpArgs->IP,servAddrpArgs->PORT);
+
+	pthread_exit(NULL);
 }
 
 void Masterquery::EntryPoint( void )
@@ -257,12 +301,9 @@ void Masterquery::Query( void )
 			char logout[128];
 
         snprintf( queryString, 256, "1%c0.0.0.0:0%c%s%c", serverParam_q.getregion(), 0 ,serverParam_q.getfilter(), 0 );
-        //snprintf( queryString, 256, "1%c0.0.0.0:0%c\\gamedir\\%s\\napp\\500%c", 255, 0 ,gameName, 0 );
 
 		snprintf(logout, 128, "Masterquery::Query() querying '%s:%s' with string: '%s'", ip, port, queryString);
 		Log(logout);
-		
-        //socket.send_to(boost::asio::buffer(queryString), receiver_endpoint);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		fd_set read_sockets;
@@ -346,8 +387,6 @@ void Masterquery::Query( void )
             gIp = RequestMore(&socket, gIp);
         }
 		Log("Masterquery::Query() EOF!");
-		exit(0);// Temporal, just because I want to see the IPs returned by the server
-		Finished();
     }
     catch (std::exception& e)
     {

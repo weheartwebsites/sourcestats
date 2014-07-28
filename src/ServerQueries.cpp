@@ -6,7 +6,7 @@
 #include "Masterquery.h"
 #include "Client2MasterProt.h"
 #include "ServerQueries.h"
-//#include "bzlib.h"
+#include "bzlib.h"
 
 using boost::asio::ip::udp;
 extern Client2MasterProt serverParam_q;
@@ -993,12 +993,12 @@ size_t ServerQueries::SrcSrv_SplitResponse(udp::socket* socket,  boost::array<ch
 				if(recv_bufs_d[z][7] & 0x80)// The first packet and is compressed
 				{
 					unsigned int rcv_size;
-					/*res = BZ2_bzBuffToBuffDecompress((it + t_len),// Destination
+					res = BZ2_bzBuffToBuffDecompress((it + t_len),// Destination
 			                                       &rcv_size, // Destination Lenght
 			                                       &recv_bufs_d[z][20], // Source
 			                                       len_d[z]-20u, // Source length
 			                                       0, // small
-			                                       0); // verbosity*/
+			                                       0); // verbosity
 			      t_len += rcv_size;
 				}
 				else// The first packet and is not compressed
@@ -1016,12 +1016,12 @@ size_t ServerQueries::SrcSrv_SplitResponse(udp::socket* socket,  boost::array<ch
 				if(recv_bufs_d[z][7] & 0x80)// Not the first packet and is compressed
 				{
 					unsigned int rcv_size;
-					/*res = BZ2_bzBuffToBuffDecompress( it,// Destination
+					res = BZ2_bzBuffToBuffDecompress( it,// Destination
 			                                       &rcv_size, // Destination Lenght
 			                                       &recv_bufs_d[z][12], // Source
 			                                       len_d[z]-12u, // Source length
 			                                       0, // small
-			                                       0); // verbosity*/
+			                                       0); // verbosity
 			      t_len += rcv_size;
 				}
 				else// Not the first packet and is not compressed

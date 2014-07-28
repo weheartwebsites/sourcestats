@@ -561,12 +561,19 @@ void ServerQueries::ParseMasterReply_A2S_PLAYER(const unsigned char* recvData, s
 		}
 
 		//snprintf(logout, 128, "            Score: %x-%x-%x-%x", (unsigned int)recvData[j+1], (unsigned int)recvData[j+2], (unsigned int)recvData[j+3],(unsigned int)recvData[j+4]);//Header 1
-		snprintf(logout, 128, "            Score: %u", (long)recvData[j+1], (long)recvData[j+2], (long)recvData[j+3],(long)recvData[j+4]);//Header 1
+		snprintf(logout, 128, "            Score: %ld", (long)recvData[j+1] | (long)recvData[j+2] << 8 | (long)recvData[j+3] << 16 | (long)recvData[j+4] << 24);//Score
 		Log(logout,id_query.c_str());
 		
 		j += 4;
 		
-		snprintf(logout, 128, "            Duration: %l", (long)recvData[j+1] | (long)recvData[j+2] << 8 | (long)recvData[j+3] << 16 | (long)recvData[j+4] << 24);//Header 1
+		union{unsigned char Bytes[4];float Number;} uFloat;
+		uFloat.Bytes[0] = recvData[j+1];
+		uFloat.Bytes[1] = recvData[j+2];
+		uFloat.Bytes[2] = recvData[j+3];
+		uFloat.Bytes[3] = recvData[j+4];
+		
+		snprintf(logout, 128, "            Duration: %f", uFloat.Number);//Duration
+		//snprintf(logout, 128, "            Duration: %f", (long)recvData[j+1] | (long)recvData[j+2] << 8 | (long)recvData[j+3] << 16 | (long)recvData[j+4] << 24);//Duration
 		Log(logout,id_query.c_str());
 		
 		j += 5;

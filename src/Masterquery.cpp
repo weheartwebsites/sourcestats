@@ -50,6 +50,8 @@ void Masterquery::Exec( void )
 	if(m_vResultlist.size() > 0)
 	{
 		int i = 1;
+		
+		//for (std::vector<GameserverEntry*>::iterator it = m_vResultlist.end()-1 ; it != m_vResultlist.begin() && it != m_vResultlist.end()-2; --it)
 		for (std::vector<GameserverEntry*>::iterator it = m_vResultlist.end()-1 ; it != m_vResultlist.begin() && it != m_vResultlist.end()-3; --it)
 		{
 			char logout[128];
@@ -65,6 +67,9 @@ void Masterquery::Exec( void )
 			
 			servAddr2Ip( servAddr_t->IP, 128,server_addr);
 			servAddr2Port( servAddr_t->PORT, 128, server_addr );
+			/*sprintf( servAddr_t->IP, "%s","196.38.180.25");
+			sprintf( servAddr_t->PORT, "%s", "27015" );*/
+			
 			
 			sprintf(tag_tem,"Thread#%d",i);
 			
@@ -92,9 +97,9 @@ void* Masterquery::ThreadServerQueries( void *arg )
 
 	ServerQuery1.query_A2S_INFO(servAddrpArgs->IP,servAddrpArgs->PORT);
 	
-	ServerQuery1.query_A2S_PLAYER(servAddrpArgs->IP,servAddrpArgs->PORT);
-	
 	ServerQuery1.query_A2S_RULES(servAddrpArgs->IP,servAddrpArgs->PORT);
+	
+	ServerQuery1.query_A2S_PLAYER(servAddrpArgs->IP,servAddrpArgs->PORT);
 
 	pthread_exit(NULL);
 }

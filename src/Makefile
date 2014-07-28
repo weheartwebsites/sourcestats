@@ -17,7 +17,8 @@ astest: ${OBJ}
 	g++ -I/usr/include/mysql++ -I/usr/include/mysql -c -ggdb -DDEBUG -c $<
 
 all: ${OBJ}
-	g++ -ggdb -DDEBUG -o ${OUTBIN} -pthread -lmysqlpp -lboost_system -lboost_thread *.o 
+	g++ -ggdb -DDEBUG -o ${OUTBIN} -pthread -lmysqlpp -lboost_system -lboost_thread *.o
+	#g++ -ggdb -DDEBUG -o ${OUTBIN} -pthread -lmysqlpp -lboost_system -lboost_thread *.o -lbz2
 
 clean:
 	rm -f *.o ${OUTBIN} mastertest astest 

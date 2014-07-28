@@ -9,6 +9,7 @@
 #include "ThreadedRequest.h"
 #include "SourceStats.h"
 
+//const int MAX_RCV_BUFF = 5120;
 // this class is responsible for getting all servers for the given game
 //class Masterquery : public ThreadedRequest
 class ServerQueries : public DebugLog
@@ -27,6 +28,8 @@ public:
 	void get_ChallengeN_A2S_PLAYER(boost::asio::ip::udp::socket* socket,const char *ip,const char *port, unsigned char *challenge_number);
 	//void get_ChallengeN_A2S_RULES(boost::asio::ip::udp::socket* socket,const char *ip,const char *port, unsigned char *challenge_number);
 	size_t get_ChallengeN_A2S_RULES(boost::asio::ip::udp::socket* socket,const char *ip,const char *port, boost::array<char, 5120> *recv_buf_challenge);
+	
+	size_t SrcSrv_SplitResponse(boost::asio::ip::udp::socket* socket,boost::array<char, 5120> *rcv_buffer,size_t rcv_len);
 	
 	void set_id_query(const char *param){id_query = param;}
 	const char *get_id_query(){return id_query.c_str();}

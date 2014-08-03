@@ -4,8 +4,9 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 #include "Client2MasterProt.h"
+#include "const.h"
 
-Client2MasterProt::Client2MasterProt()//:verbose_m(false),IpPort_server("0:0"),region('0'),Port("0"),filter("0")
+Client2MasterProt::Client2MasterProt()
 {
 	verbose_m = false;
 	Hostname_server = "0";
@@ -14,126 +15,85 @@ Client2MasterProt::Client2MasterProt()//:verbose_m(false),IpPort_server("0:0"),r
 	filter = "0";
 	timeoutSeconds = 0;
 	n_retry = 0;
+	max_threads = 0;
 }
 
 void Client2MasterProt::set(int argc, char *argv[])
 {
 	char c;
 	char logout[512];
-	
-	if(argc < 13)
+	string conf_path;
+	if(argc < 3 || argc > 4)
 	{
 		snprintf(logout, 512, 
-		"Error: No input parameters.\n"
-		"Use:     %s -i <IP server address> -p <Server Port> -r <Region code (decimal)> -f <Filter> -t <Timeout(seconds)> -n <Number of retries> [-v]\n"
-		"Example: %s -h hl2master.steampowered.com -p 27011 -r us-west -f \"\\type\\d\\secure\\1\" -t 3 -n 3",argv[0],argv[0]);
-
+		"Error: Wrong input parameters.\n"
+		"Use:     %s -c <Config file path> [-v]\n"
+		"Example: %s -c /home/daniel/GitHub_repos/sourcestats_optimized/src/config.conf",argv[0],argv[0]);
+		
 		Log(logout);
 		exit(-1);
 	}
 	
-	while((c = getopt (argc,argv,"h:p:r:f:t:n:v")) != EOF)
+	while((c = getopt (argc,argv,"c:v")) != EOF)
 	switch ((char) c)
 	{
-		case 'h':
+		case 'c':
 			if (optarg == NULL)
 			{
-				snprintf(logout, 128, "Client2MasterProt::set() Hostname is missing");
+				snprintf(logout, 128, "Client2MasterProt::set() Configuration file path is missing");
 				Log(logout);
 				exit(0);
 			}
 			else
 			{
-				snprintf(logout, 128, "Client2MasterProt::set() Hostname address: %s", optarg);
+				snprintf(logout, 128, "Client2MasterProt::set() Configuration file path: %s", optarg);
 				Log(logout);
-				Hostname_server = optarg;
+				conf_path = optarg;
 			}
-		break;
-		case 'p':
-			if(optarg == NULL)
-			{
-				snprintf(logout, 128, "Client2MasterProt::set() Port is missing");
-				Log(logout);
-				exit(0);
-			}
-			else
-			{
-				snprintf(logout, 128, "Client2MasterProt::set() Port: %s", optarg);
-				Log(logout);
-				Port = optarg;
-			}
-		break;
-		case 'r':
-			if (optarg == NULL)
-			{
-				snprintf(logout, 128, "Client2MasterProt::set() Region is missing");
-				Log(logout);
-				exit(0);
-			}
-			else
-			{
-				region = Region_str2int((string)optarg);
-				snprintf(logout, 128, "Client2MasterProt::set() Region: %s (%d)", optarg,(unsigned int)region);
-				Log(logout);
-			}
-		break;
-		case 'f':
-			if(optarg == NULL)
-			{
-				snprintf(logout, 128, "Client2MasterProt::set() Filter is missing");
-				Log(logout);
-				exit(0);
-			}
-			else
-			{
-				snprintf(logout, 128, "Client2MasterProt::set() Filter: %s", optarg);
-				Log(logout);
-				filter = optarg;
-			}
-			
 		break;
 		case 'v':
 			verbose_m = true;
 			snprintf(logout, 128, "Client2MasterProt::set() Verbose mode");
 			Log(logout);
 		break;
-		case 't':
-			if(optarg == NULL)
-			{
-				snprintf(logout, 128, "Client2MasterProt::set() Timeout(seconds) is missing");
-				Log(logout);
-				exit(0);
-			}
-			else
-			{
-				snprintf(logout, 128, "Client2MasterProt::set() Timeout(seconds): %s", optarg);
-				Log(logout);
-				timeoutSeconds = atoi(optarg);
-			}
-		break;
-		case 'n':
-			if(optarg == NULL)
-			{
-				snprintf(logout, 128, "Client2MasterProt::set() Number of retries is missing");
-				Log(logout);
-				exit(0);
-			}
-			else
-			{
-				snprintf(logout, 128, "Client2MasterProt::set() Number of retries: %s", optarg);
-				Log(logout);
-				n_retry = atoi(optarg);
-			}
-		break;
 	}
-}
+	
+	char master_server_p[100];
+	char master_port_p[6];
+	char master_region_p[20];
+	char master_filter_p[100];
+	char timeout_p[20];
+	char retries_p[10];
+	char max_threads_p[10];
+	char mysql_host_p[100];
+	char mysql_user_p[100];
+	char mysql_pass_p[100];
+	char mysql_db_p[100];
 
-void Client2MasterProt::AddServers(MasterserverManager &MasterserverManager_obj)
-{
-	int i;
+	printf("Reading configuration file: %s",conf_path.c_str());
+	CHECK_SYNTAX_CONF(conf_path.c_str())
+	GET_DATA_CONF("master_server","master_server",master_server_p,100,conf_path.c_str())
+	GET_DATA_CONF("master_port","master_port",master_port_p,6,conf_path.c_str())
+	GET_DATA_CONF("master_region","master_region",master_region_p,20,conf_path.c_str())
+	GET_DATA_CONF("master_filter","master_filter",master_filter_p,100,conf_path.c_str())
+	GET_DATA_CONF("timeout","timeout",timeout_p,20,conf_path.c_str())
+	GET_DATA_CONF("retries","retries",retries_p,10,conf_path.c_str())
+	GET_DATA_CONF("max_threads","max_threads",max_threads_p,10,conf_path.c_str())
+	/*GET_DATA_CONF("mysql_host","mysql_host",mysql_host_p,100,conf_path.c_str())
+	GET_DATA_CONF("mysql_user","mysql_user",mysql_user_p,100,conf_path.c_str())
+	GET_DATA_CONF("mysql_pass","mysql_pass",mysql_pass_p,100,conf_path.c_str())
+	GET_DATA_CONF("mysql_db","mysql_db",mysql_db_p,100,conf_path.c_str())*/
+	
+	Hostname_server = master_server_p;
+	Port = master_port_p;
+	region = Region_str2int((string)master_region_p);
+	filter = master_filter_p;
+	timeoutSeconds = atoi(timeout_p);
+	n_retry = atoi(retries_p);
+	max_threads = atoi(max_threads_p);
+	
 	struct hostent *he;
 	struct in_addr **addr_list;
-	string IpPort_address_temp;
 
 	if ((he = gethostbyname(Hostname_server.c_str())) == NULL)
 	{
@@ -143,15 +103,37 @@ void Client2MasterProt::AddServers(MasterserverManager &MasterserverManager_obj)
 
 	addr_list = (struct in_addr **)he->h_addr_list;
     
-	for(i = 0; addr_list[i] != NULL; i++)
+	if(addr_list[0] != NULL)
 	{
-		IpPort_address_temp = inet_ntoa(*addr_list[i]);	
-		IpPort_address_temp += ":";
-		IpPort_address_temp += Port;
-		MasterserverManager_obj.AddServer( IpPort_address_temp.c_str() );
+		Ip = inet_ntoa(*addr_list[0]);	
 	}
 }
 
+void Client2MasterProt::AddServers(MasterserverManager &MasterserverManager_obj)
+{
+	string IpPort_address_temp;
+	IpPort_address_temp = Ip;	
+	IpPort_address_temp += ":";
+	IpPort_address_temp += Port;
+	MasterserverManager_obj.AddServer( IpPort_address_temp.c_str() );
+}
+
+servAddr Client2MasterProt::getservAddr()
+{
+	servAddr stServaddr;
+	int ret1,ret2;
+	
+	ret1 = sscanf( Ip.c_str(), "%u.%u.%u.%u", (unsigned int*)&stServaddr.ip1, (unsigned int*)&stServaddr.ip2, (unsigned int*)&stServaddr.ip3, (unsigned int*)&stServaddr.ip4, (unsigned int*)&stServaddr.port );
+	ret2 = sscanf( Port.c_str(), "%u", (unsigned int*)&stServaddr.port );
+	
+	if ( ret1 != 4 || ret2 != 1 )
+	{
+		Log("Client2MasterProt::getservAddr() tried to return malformed server ip:port");
+		exit(-1);
+	}
+	
+	return stServaddr;
+}
 
 int Client2MasterProt::Region_str2int(string param_str)
 {

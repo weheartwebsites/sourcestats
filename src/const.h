@@ -1,8 +1,11 @@
 #ifndef CONST_H
 #define CONST_H
 
-#include <stdio.h>
+#include <cstdio>
 #include <string>
+#include <cstring>
+#include <cstdlib>
+
 
 enum giQuery_state
 {
@@ -97,5 +100,43 @@ typedef struct {
 void servAddr2String( char* sAddr, size_t size, servAddr stServaddr );
 void servAddr2Ip( char* sAddr, size_t size, servAddr stServaddr );
 void servAddr2Port( char* sAddr, size_t size, servAddr stServaddr );
+
+int getConfData(const char *in_variable,char *out_value,int tam_max,const char *file_path);
+int checkSyntaxConf(const char *file_path);
+int readConfData(const char *in_variable,char *out_value,int tam_max,const char *file_path,int check_syntax);
+
+#define MAX_LINE_SIZE 500
+#define TAMANO_MAX_BUFFER MAX_LINE_SIZE+2
+
+#define CHECK_SYNTAX 1
+#define FIND_DATA  0
+
+#define GET_DATA_CONF(PARAM1,PARAM2,VALUE,MAX_VAL,CONF_FILE) \
+        switch(getConfData(PARAM1,VALUE,MAX_VAL,CONF_FILE)) \
+        { \
+            case 0: \
+                printf(#PARAM1" = <%s>\n",VALUE); \
+            break; \
+            case 1: \
+                if(getConfData(PARAM2,VALUE,MAX_VAL,CONF_FILE)==0) \
+                { \
+                    printf(#PARAM2" = <%s>\n",VALUE); \
+                    break; \
+                } \
+            default: \
+                printf("Can't find: " PARAM1 "," PARAM2 "\n"); \
+                exit(-1); \
+            break; \
+        }
+
+#define CHECK_SYNTAX_CONF(CONF_FILE) \
+        if(checkSyntaxConf(CONF_FILE)==1) \
+        { \
+            printf("Syntax OK!\n"); \
+        } \
+        else \
+        { \
+            printf("Syntax ERROR\n"); \
+        }
 
 #endif // CONST_H

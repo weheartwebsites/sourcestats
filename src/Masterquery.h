@@ -5,31 +5,33 @@
 #include "const.h"
 #include <boost/array.hpp>
 #include <boost/asio.hpp>
-#include "GameserverEntry.h"
-#include "ThreadedRequest.h"
-#include "SourceStats.h"
+#include "DebugLog.h"
 
 // this class is responsible for getting all servers for the given game
-class Masterquery : public ThreadedRequest
+class Masterquery : public DebugLog
 {
 public:
-	Masterquery( ThreadFactory* );
+	Masterquery();
 	~Masterquery();
-
+	
 	void				SetMaster( servAddr );
 	void				SetGame( const char* );
 	void				EntryPoint( void );
 	void				Query( void );
-	void				AddEntry( GameserverEntry* );
+	//void				AddEntry( GameserverEntry* );
+	void				AddEntry( servAddr* );
+	
 	mqQuery_state		GetState( void ) { return m_iState; }
-	void				ResetIterator( void );
-	GameserverEntry*	GetNextServer( void );
-    void                Exec( void );
+	void                Exec( void );
 	const char*			GetClassName( void ) { return "Masterquery"; }
-
+	
 	static void*	ThreadServerQueries( void *arg );
-
-    virtual void        Log( const char* logMsg );
+	
+	static void    IncreaseOneThread();
+	static void    DecreaseOneThread();
+	static int     GetNumberThreads();
+	
+	virtual void        Log( const char* logMsg );
 	virtual bool		IsMasterquery( void ) { return true; }
 
 protected:
@@ -39,14 +41,14 @@ protected:
 private:
 	void				GetMasterIpString( char* );
 	void				GetMasterPortString( char* );
-	void				Finished( void );
 
 	char				gameName[128];
 	servAddr			masterAddr;
 	mqQuery_state		m_iState;
 
-	std::vector <GameserverEntry*>			m_vResultlist;
-	std::vector <GameserverEntry*>::iterator m_geIT;
+	//std::vector <GameserverEntry*>			m_vResultlist;
+	std::vector <servAddr*>			m_vResultlist;
+	static int nActiveThreads;
 };
 
 #endif // MASTERQUERY_H

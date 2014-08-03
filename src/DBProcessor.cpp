@@ -2,7 +2,7 @@
 #include <vector>
 #include "DBProcessor.h"
 #include "const.h"
-#include "GameserverInfo.h"
+//#include "GameserverInfo.h"
 #include <dbdriver.h>
 #include <string.h>
 #include <unistd.h>
@@ -17,7 +17,8 @@ extern pthread_mutex_t muLog;
 #define DB_PASS "sourcestats"
 
 
-DBProcessor::DBProcessor( ThreadFactory* pFactory, GameStats* pStats ) : ThreadedRequest( pFactory ), m_pGameStats( pStats )
+//DBProcessor::DBProcessor( ThreadFactory* pFactory, GameStats* pStats ) : ThreadedRequest( pFactory ), m_pGameStats( pStats )
+DBProcessor::DBProcessor()
 {
 	//SetParentClassName( "DBProcessor" );
 	m_bDataLeft = true;
@@ -32,9 +33,9 @@ DBProcessor::~DBProcessor()
 
 void DBProcessor::EntryPoint( void )
 {
-	ThreadedRequest::PreEntryPoint();
+	//ThreadedRequest::PreEntryPoint();
 	Setup();
-	ThreadedRequest::PostEntryPoint();
+	//ThreadedRequest::PostEntryPoint();
 }
 
 void DBProcessor::Setup()
@@ -50,7 +51,7 @@ void DBProcessor::Setup()
         Log(sLog);
     }
 
-	m_pGameStats->ResetIterator();
+	//m_pGameStats->ResetIterator();
 }
 
 void DBProcessor::ProcessToDatabase( void )
@@ -87,7 +88,7 @@ void DBProcessor::ProcessToDatabase( void )
 
 	Log("DBProcessor::ProcessToDatabase() no data left!");
 	m_iState = DBSTATE_DONE;
-	m_pGameStats->SetState(GSSTATE_DONE);
+//	m_pGameStats->SetState(GSSTATE_DONE);
 }
 
 bool DBProcessor::DataLeft()
@@ -142,10 +143,10 @@ void DBProcessor::Loop( void )
 
 void DBProcessor::Log( const char* logMsg )
 {
-	int curThreads = GetActiveThreadNo();
+	/*int curThreads = GetActiveThreadNo();
 	pthread_mutex_lock (&muLog);
 	cout << "[" << time(NULL) << "|TF: " << curThreads << "] " << logMsg << endl;
-	pthread_mutex_unlock (&muLog);
+	pthread_mutex_unlock (&muLog);*/
 }
 
 void DBProcessor::LogNoDeadLock( const char* logMsg )
@@ -157,7 +158,7 @@ void DBProcessor::LogNoDeadLock( const char* logMsg )
 
 const char* DBProcessor::GetGameName()
 {
-	if(m_pGameStats)
-		return m_pGameStats->GetGameName();
+	/*if(m_pGameStats)
+		return m_pGameStats->GetGameName();*/
 	return "UNDEFINED";
 }

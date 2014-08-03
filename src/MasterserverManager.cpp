@@ -1,7 +1,6 @@
 #include "MasterserverManager.h"
 #include <iostream>
 #include "const.h"
-#include "Masterserver.h"
 #include <stdlib.h>
 
 MasterserverManager* MasterserverManager::gMasterserverManager = NULL;
@@ -28,28 +27,34 @@ void MasterserverManager::AddServer( const char* sServerstring )
 
 	if ( ret == 5 )
 	{
-		Masterserver* mServer = new Masterserver( stServaddr );
-		AddServer( mServer );
+		//Masterserver* mServer = new Masterserver( stServaddr );
+		//AddServer( mServer );
+		AddServer( &stServaddr );
 	}
 	else
 		fprintf( stderr, "MasterserverManager::AddServer() tried to add malformed server ip:port -- %s\n", sServerstring );
 }
 
-void MasterserverManager::AddServer( Masterserver* mServer )
+//void MasterserverManager::AddServer( Masterserver* mServer )
+void MasterserverManager::AddServer( servAddr* mServer )
 {
 	char servString[128];
-	servAddr2String( servString, 128, mServer->getAddr() );
+	//servAddr2String( servString, 128, mServer->getAddr() );
+	servAddr2String( servString, 128, *mServer );
 	std::cout << "[" << time(NULL) << "] MasterserverManager::AddServer() added new master server: " << servString << std::endl;
-
-    pthread_mutex_lock(&m_masterMutex);
+	
+	pthread_mutex_lock(&m_masterMutex);
 	m_vMasterserverList.push_back(mServer);
 	pthread_mutex_unlock(&m_masterMutex);
 }
 
 servAddr MasterserverManager::GetServerAdress( void )
 {
-    pthread_mutex_lock(&m_masterMutex);
-	Masterserver* mServer = m_vMasterserverList.front(); // TODO, get a random one, make some quality checks to use the best quality one, lowest query rate etc.
+	pthread_mutex_lock(&m_masterMutex);
+	//Masterserver* mServer = m_vMasterserverList.front(); // TODO, get a random one, make some quality checks to use the best quality one, lowest query rate etc.
+	servAddr* mServer = m_vMasterserverList.front(); // TODO, get a random one, make some quality checks to use the best quality one, lowest query rate etc.
+
 	pthread_mutex_unlock(&m_masterMutex);
-	return mServer->getAddr();
+	//return mServer->getAddr();
+	return *mServer;
 }

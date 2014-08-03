@@ -2,8 +2,9 @@
 #define MASTERSERVERMANAGER_H
 
 #include <vector>
-#include "Masterserver.h"
+//#include "Masterserver.h"
 #include <pthread.h>
+#include "const.h"
 
 class MasterserverManager
 {
@@ -14,18 +15,19 @@ private:
 
 	static MasterserverManager* gMasterserverManager;
 
-	std::vector <Masterserver*> m_vMasterserverList;
-	//std::vector <GameserverInfo*> m_vServerInfos;
-
-	//static void CleanupServerInfos( void );
-	//void RequestServInfo( servAddr );
+	//std::vector <Masterserver*> m_vMasterserverList;
+	std::vector <servAddr*> m_vMasterserverList;
+	//servAddr m_stServaddr;
+	
 	pthread_mutex_t					m_masterMutex;
 
 public:
 	static MasterserverManager* getInstance();
 	static void Destroy();
 
-	void				AddServer( Masterserver* mServer );
+	//void				AddServer( Masterserver* mServer );
+	void				AddServer( servAddr* mServer );
+	
 	void				AddServer( const char* sServerstring );
 	servAddr			GetServerAdress( void );
 };

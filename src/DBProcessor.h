@@ -4,14 +4,15 @@
 #include "const.h"
 #include <stdio.h>
 #include <mysql++.h>
-#include "ThreadedRequest.h"
-#include "GameStats.h"
+//#include "ThreadedRequest.h"
+//#include "GameStats.h"
 
 
-class DBProcessor : public ThreadedRequest
+class DBProcessor// : public ThreadedRequest
 {
 public:
-	DBProcessor(ThreadFactory*, GameStats*);
+	//DBProcessor(ThreadFactory*, GameStats*);
+	DBProcessor();
 	~DBProcessor();
 
 	//virtual void			Init( GameStats* pStats );
@@ -31,7 +32,7 @@ private:
 	bool					DataLeft();
 
     mysqlpp::Connection     m_sqlConn;
-    GameStats*              m_pGameStats;
+  //  GameStats*              m_pGameStats;
 	bool					m_bDataLeft;
 	dbQuery_state			m_iState;
 	char					m_sQryString[1024];
